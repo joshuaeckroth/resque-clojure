@@ -66,13 +66,14 @@
 (defn -format-error [result]
   (let [exception (:exception result)
         stacktrace (map #(.toString %) (.getStackTrace exception))
-        exception-class (-> exception (.getClass) (.getName))]
+        exception-class (-> exception (.getClass) (.getName))
+        user-at-host (apply str (interpose ":" (reverse (.split (.getName (java.lang.management.ManagementFactory/getRuntimeMXBean)) "@"))))]
     {:failed_at (format "%1$tY/%1$tm/%1$td %1$tk:%1$tM:%1$tS" (Date.))
      :payload (select-keys result [:job :class :args])
      :exception exception-class
      :error (or (.getMessage exception) "(null)")
      :backtrace stacktrace
-     :worker (apply str (interpose ":" (reverse (.split (.getName (java.lang.management.ManagementFactory/getRuntimeMXBean)) "@"))))
+     :worker (format "%s:%s" user-at-host (:queue result))
      :queue (:queue result)}))
 
 (defn -dequeue-randomized [queues]

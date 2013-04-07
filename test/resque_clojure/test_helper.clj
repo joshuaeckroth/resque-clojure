@@ -1,4 +1,4 @@
-(ns resque-clojure.test.helper
+(ns resque-clojure.test-helper
   (:use [clojure.java.shell :only [sh]])
   (:require [clojure.string :as string]
             [resque-clojure.redis :as redis]

@@ -1,4 +1,4 @@
-(ns resque-clojure.test.worker
+(ns resque-clojure.worker-test
   (:refer-clojure :exclude [name])
   (:use [resque-clojure.worker]
         [clojure.test]))
@@ -10,7 +10,7 @@
 
 (deftest work-on-test
   (let [good-job {:func "clojure.core/str" :args ["foo"] :queue "test-queue"}
-        bad-job {:func "resque-clojure.test.worker/exceptional" :args ["foo"]}]
+        bad-job {:func "resque-clojure.worker-test/exceptional" :args ["foo"]}]
     (is (= {:result :pass :job good-job :queue "test-queue"} (work-on "agent-state" good-job)))
     (is (= :error (:result (work-on "agent-state" bad-job))))
     (is (= java.lang.ArithmeticException (.getClass (:exception (work-on "agent-state" bad-job)))))))

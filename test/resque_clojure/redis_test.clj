@@ -1,6 +1,6 @@
-(ns resque-clojure.test.redis
+(ns resque-clojure.redis-test
   (:require [resque-clojure.redis :as redis]
-            [resque-clojure.test.helper :as helper])
+            [resque-clojure.test-helper :as helper])
   (:use [clojure.test]
         [resque-clojure.util :only [includes?]]))
 

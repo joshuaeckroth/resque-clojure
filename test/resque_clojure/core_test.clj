@@ -1,4 +1,4 @@
-(ns resque-clojure.test.core
+(ns resque-clojure.core-test
   (:use [clojure.test]
         [resque-clojure.core])
   (:require [resque-clojure.redis :as redis]

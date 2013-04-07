@@ -1,7 +1,7 @@
-(ns resque-clojure.test.resque
+(ns resque-clojure.resque-test
   (:use [clojure.test]
         [resque-clojure.resque])
-  (:require [resque-clojure.test.helper :as helper]
+  (:require [resque-clojure.test-helper :as helper]
             [resque-clojure.redis :as redis]))
 
 (def test-key "resque-clojure-test")
@@ -39,7 +39,7 @@
     (is (= "java.lang.ArithmeticException" (:exception formatted)))
     (is (= "Divide by zero" (:error formatted)))
     (is (re-find #"^clojure.lang.Numbers.divide" (first (:backtrace formatted))))
-    (is (= "hostname:pid:queue" (:worker formatted)))
+    (is (re-matches #"[^:]+:\d+:test-queue" (:worker formatted)))
     (is (= "test-queue" (:queue formatted)))))
 
 (deftest namespace-affects-keys
