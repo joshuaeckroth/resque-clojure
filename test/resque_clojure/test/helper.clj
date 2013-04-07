@@ -20,7 +20,7 @@
   (sh "redis-cli" "-p" (*config* 'port) "shutdown"))
 
 (defn config-redis []
-  (core/configure {:port (Integer/parseInt (*config* 'port)) :host "localhost" :max-workers 1}))
+  (core/configure {:port (Integer/parseInt (*config* 'port)) :host "localhost" :max-workers 1 :password nil}))
 
 (defn redis-test-instance [tests]
   (start-redis)
