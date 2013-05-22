@@ -36,10 +36,10 @@
   (redis/rpush (-namespace-key "failed") (json/json-str (-format-error result))))
 
 (defn working-on [worker-agent job]
-  (redis/set (format "worker:%s" (:name @worker-agent)) (str job)))
+  (redis/set (-namespace-key (format "worker:%s" (:name @worker-agent))) (str job)))
 
 (defn done-working [worker-name]
-  (redis/del (format "worker:%s" worker-name)))
+  (redis/del (-namespace-key (format "worker:%s" worker-name))))
 
 (defn register [queues]
   (let [worker-name (worker/name queues)
