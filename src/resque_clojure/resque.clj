@@ -8,6 +8,7 @@
 (declare -namespace-key
          -full-queue-name
          -format-error
+         -format-job
          -dequeue-randomized)
 
 ;;
@@ -36,7 +37,8 @@
   (redis/rpush (-namespace-key "failed") (json/json-str (-format-error result))))
 
 (defn working-on [worker-agent job]
-  (redis/set (-namespace-key (format "worker:%s" (:name @worker-agent))) (str job)))
+  (redis/set (-namespace-key (format "worker:%s" (:name @worker-agent)))
+             (json/json-str (-format-job job))))
 
 (defn done-working [worker-name]
   (redis/del (-namespace-key (format "worker:%s" worker-name))))
@@ -81,6 +83,11 @@
      :backtrace stacktrace
      :worker (format "%s:%s" user-at-host (:queue result))
      :queue (:queue result)}))
+
+(defn -format-job [job]
+  {:queue (:queue job)
+   :run_at (format "%1$tY/%1$tm/%1$td %1$tk:%1$tM:%1$tS" (Date.))
+   :payload (select-keys job [:func :args])})
 
 (defn -dequeue-randomized [queues]
   "Randomizes the list of queues. Then returns the first queue that contains a job"
