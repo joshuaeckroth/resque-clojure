@@ -70,6 +70,9 @@
 (defcommand smembers [key]
   (seq (.smembers redis key)))
 
+(defcommand sismember [key value]
+  (.sismember redis key value))
+
 (defcommand sadd [key value]
   (.sadd redis key value))
 

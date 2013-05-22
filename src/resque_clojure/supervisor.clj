@@ -18,7 +18,7 @@
 
 (defn start [queues]
   "start listening for jobs on queues (vector)."
-  (dotimes [n (:max-workers @config)] (make-agent))
+  (dotimes [n (:max-workers @config)] (make-agent queues))
   (listen-to queues)
   (dosync (ref-set run-loop? true))
   (.start (Thread. listen-loop)))
@@ -27,9 +27,14 @@
   "stops polling queues. waits for all workers to complete current job"
   (dosync (ref-set run-loop? false))
   (apply await-for (:max-shutdown-wait @config) @working-agents)
-  (resque/unregister @watched-queues))
+  (resque/unregister @watched-queues)
+  (swap! watched-queues (constantly []))
+  (dosync
+   (alter idle-agents (constantly #{}))
+   (alter working-agents (constantly #{}))))
 
 (defn worker-complete [key ref old-state new-state]
+  (resque/done-working (:name new-state))
   (release-worker ref)
   (dispatch-jobs)
   (if (= :error (:result new-state))
@@ -39,7 +44,9 @@
   (when-let [worker-agent (reserve-worker)]
     (let [msg (resque/dequeue @watched-queues)]
       (if msg
-        (send-off worker-agent worker/work-on msg)
+        (do
+          (resque/working-on worker-agent msg)
+          (send-off worker-agent worker/work-on msg))
         (release-worker worker-agent)))))
 
 (defn listen-loop []
@@ -49,8 +56,10 @@
       (Thread/sleep (:poll-interval @config))
       (recur))))
 
-(defn make-agent []
-  (let [worker-agent (agent {} :error-handler (fn [a e] (throw e)))]
+(defn make-agent [queues]
+  (let [worker-name (worker/name queues)
+        worker-agent (agent {:name worker-name}
+                            :error-handler (fn [a e] (throw e)))]
     (add-watch worker-agent 'worker-complete worker-complete)
     (dosync (commute idle-agents conj worker-agent))
     worker-agent))
@@ -58,7 +67,6 @@
 (defn reserve-worker []
   "either returns an idle worker or nil.
    marks the returned worker as working."
-  
   (dosync
    (let [selected (first @idle-agents)]
      (if selected

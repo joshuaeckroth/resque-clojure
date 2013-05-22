@@ -54,6 +54,13 @@
   (is (includes? (redis/smembers test-key) "element1"))
   (is (not (includes? (redis/smembers test-key) "element2"))))
 
+(deftest set-ops-sismember
+  (is (not (redis/sismember test-key "element0")))
+  (redis/sadd test-key "element0")
+  (is (redis/sismember test-key "element0"))
+  (redis/srem test-key "element0")
+  (is (not (redis/sismember test-key "element0"))))
+
 (deftest test-keys
   (redis/set test-key "asdf")
   (is (includes? (redis/keys test-key) test-key)))

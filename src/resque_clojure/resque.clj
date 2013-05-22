@@ -35,6 +35,12 @@
 (defn report-error [result]
   (redis/rpush (-namespace-key "failed") (json/json-str (-format-error result))))
 
+(defn working-on [worker-agent job]
+  (redis/set (format "worker:%s" (:name @worker-agent)) (str job)))
+
+(defn done-working [worker-name]
+  (redis/del (format "worker:%s" worker-name)))
+
 (defn register [queues]
   (let [worker-name (worker/name queues)
         worker-started-key (str "worker:" worker-name ":started")
